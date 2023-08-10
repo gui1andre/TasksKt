@@ -1,21 +1,23 @@
 package com.devmasterteam.tasks.viewmodel
 
 import android.app.Application
-import android.app.Person
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devmasterteam.tasks.service.constants.TaskConstants
 import com.devmasterteam.tasks.service.listener.ApiListener
 import com.devmasterteam.tasks.service.model.PersonModel
+import com.devmasterteam.tasks.service.model.PriorityModel
 import com.devmasterteam.tasks.service.model.ValidationModel
 import com.devmasterteam.tasks.service.repository.PersonRepository
+import com.devmasterteam.tasks.service.repository.PriorityRepository
 import com.devmasterteam.tasks.service.repository.SecurityPreferences
 import com.devmasterteam.tasks.service.repository.remote.RetrofitClient
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = SecurityPreferences(application.applicationContext)
     private val personRepository = PersonRepository(application.applicationContext)
+    private val priorityRepository = PriorityRepository(application.applicationContext)
     private val _login = MutableLiveData<ValidationModel>()
     val login: LiveData<ValidationModel> = _login
 
@@ -49,7 +51,19 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         val personKey = prefs.get(TaskConstants.SHARED.PERSON_KEY)
 
         RetrofitClient.addHeaders(token, personKey)
-        _loggedUser.value = token.isNotEmpty() && personKey.isNotEmpty()
+        val logged = (token.isNotEmpty() && personKey.isNotEmpty())
+        _loggedUser.value = logged
+        if(!logged){
+            priorityRepository.list(object : ApiListener<List<PriorityModel>>{
+                override fun onSucess(result: List<PriorityModel>) {
+                    priorityRepository.save(result)
+                }
+
+                override fun onFailure(message: String) {
+                    TODO("Not yet implemented")
+                }
+            })
+        }
     }
 
 }
