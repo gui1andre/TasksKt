@@ -11,4 +11,8 @@ class PersonRepository(context: Context) : BaseRepository(context) {
     fun login(email: String, password: String, listener: ApiListener<PersonModel>) {
         executeCall(remote.login(email, password), listener)
     }
+
+    fun create(name: String, email: String, password: String, listener: ApiListener<PersonModel>) {
+        executeCall(remote.create(email, password, name), listener)
+    }
 }

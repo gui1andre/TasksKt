@@ -5,11 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.devmasterteam.tasks.R
 import com.devmasterteam.tasks.databinding.ActivityLoginBinding
-import com.devmasterteam.tasks.service.model.PersonModel
 import com.devmasterteam.tasks.viewmodel.LoginViewModel
 
 class LoginActivity : AppCompatActivity(), View.OnClickListener {
@@ -36,9 +34,15 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onClick(v: View) {
-        if(v.id == R.id.button_login){
-            handleLogin()
+        when(v.id){
+            R.id.button_login -> handleLogin()
+            R.id.text_register -> handleRegister()
         }
+    }
+
+    private fun handleRegister() {
+        startActivity(Intent(this, RegisterActivity::class.java))
+        finish()
     }
 
     private fun observe() {
