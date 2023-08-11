@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.devmasterteam.tasks.service.constants.TaskConstants
+import com.devmasterteam.tasks.service.helper.BiometricHelper
 import com.devmasterteam.tasks.service.listener.ApiListener
 import com.devmasterteam.tasks.service.model.PersonModel
 import com.devmasterteam.tasks.service.model.PriorityModel
@@ -23,11 +24,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _loggedUser = MutableLiveData<Boolean>()
     val loggedUser: LiveData<Boolean> = _loggedUser
+
     /**
      * Faz login usando API
      */
-    fun doLogin(email: String, password: String, ) {
-        personRepository.login(email, password, object : ApiListener<PersonModel>{
+    fun doLogin(email: String, password: String) {
+        personRepository.login(email, password, object : ApiListener<PersonModel> {
             override fun onSucess(result: PersonModel) {
                 prefs.store(TaskConstants.SHARED.PERSON_NAME, result.name)
                 prefs.store(TaskConstants.SHARED.PERSON_KEY, result.personKey)
@@ -46,15 +48,14 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Verifica se usuário está logado
      */
-    fun verifyLoggedUser() {
+    fun verifyAuthentication() {
         val token = prefs.get(TaskConstants.SHARED.TOKEN_KEY)
         val personKey = prefs.get(TaskConstants.SHARED.PERSON_KEY)
 
         RetrofitClient.addHeaders(token, personKey)
         val logged = (token.isNotEmpty() && personKey.isNotEmpty())
-        _loggedUser.value = logged
-        if(!logged){
-            priorityRepository.list(object : ApiListener<List<PriorityModel>>{
+        if (!logged) {
+            priorityRepository.list(object : ApiListener<List<PriorityModel>> {
                 override fun onSucess(result: List<PriorityModel>) {
                     priorityRepository.save(result)
                 }
@@ -64,6 +65,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 }
             })
         }
+        _loggedUser.value = (logged && BiometricHelper.isBiometricAvailable(getApplication()))
     }
-
 }

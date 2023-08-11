@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.devmasterteam.tasks.R
 import com.devmasterteam.tasks.databinding.ActivityLoginBinding
@@ -28,13 +30,13 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
         // Eventos
         binding.buttonLogin.setOnClickListener(this)
         binding.textRegister.setOnClickListener(this)
-        viewModel.verifyLoggedUser()
+        viewModel.verifyAuthentication()
         // Observadores
         observe()
     }
 
     override fun onClick(v: View) {
-        when(v.id){
+        when (v.id) {
             R.id.button_login -> handleLogin()
             R.id.text_register -> handleRegister()
         }
@@ -46,27 +48,43 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun observe() {
-        viewModel.login.observe(this
+        viewModel.login.observe(
+            this
         ) {
-            if(it.status()){
+            if (it.status()) {
+
                 startActivity(Intent(applicationContext, MainActivity::class.java))
                 finish()
-            }else{
+            } else {
                 Toast.makeText(applicationContext, it.message, Toast.LENGTH_SHORT).show()
             }
         }
 
-        viewModel.loggedUser.observe(this){
-            if(it){
-                startActivity(Intent(applicationContext, MainActivity::class.java))
-                finish()
-            }
+        viewModel.loggedUser.observe(this) {
+            if (it) biometricAuthentication()
         }
     }
-    private fun handleLogin(){
+
+    private fun biometricAuthentication() {
+        val executor = ContextCompat.getMainExecutor(applicationContext)
+        val bio =
+            BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    startActivity(Intent(applicationContext, MainActivity::class.java))
+                    finish()
+                }
+            })
+        val info = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Valide sua digital")
+            .setNegativeButtonText("Cancelar").build()
+
+        bio.authenticate(info)
+    }
+
+    private fun handleLogin() {
         val email = binding.editEmail.text.toString()
         val password = binding.editPassword.text.toString()
-        if(email.isNotEmpty() || password.isNotEmpty())
-            viewModel.doLogin(email,password)
+        if (email.isNotEmpty() || password.isNotEmpty()) viewModel.doLogin(email, password)
     }
 }
