@@ -10,8 +10,8 @@ class PriorityModel(
     @SerializedName("Id")
     @ColumnInfo(name = "Id")
     @PrimaryKey
-    var id: Int,
+    var id: Int = 0,
     @SerializedName("Description")
     @ColumnInfo(name = "Description")
-    var description: String
+    var description: String = ""
 )

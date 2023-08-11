@@ -15,16 +15,16 @@ interface TaskService {
     @GET("Task")
     fun list(): Call<List<TaskModel>>
 
-    @GET("Next7Days")
+    @GET("Task/Next7Days")
     fun listNext(): Call<List<TaskModel>>
 
-    @GET("Overdue")
+    @GET("Task/Overdue")
     fun listOverdue(): Call<List<TaskModel>>
 
     @GET("Task/{id}")
     fun load(@Path(value = "id", encoded = true) id: Int): Call<TaskModel>
 
-    @POST("/Task")
+    @POST("Task")
     @FormUrlEncoded
     fun create(
         @Field("PriorityId") priorityId: Int,
@@ -33,7 +33,7 @@ interface TaskService {
         @Field("Complete") complete: Boolean
     ): Call<Boolean>
 
-    @PUT("/Task")
+    @PUT("Task")
     @FormUrlEncoded
     fun update(
         @Field("Id") id: Int,
